@@ -49,7 +49,7 @@ MODEL_TRAINING_EXECUTION_COMMAND=$PYTHON3_PATH $MODEL_TRAINING_ROOT_DIR/main.py 
 # Array variables to orchestrate batch of training executions
 
 # list of target users for which to create chatbots
-# TARGET_USER_RAW_STRINGS_ARRAY=("FISTNAME_1\ LASTNAME_1" "FISTNAME_2\ LASTNAME_2" "FISTNAME_N\ LASTNAME_N")
+# TARGET_USER_RAW_STRINGS_ARRAY=("FISTNAME_1 LASTNAME_1" "FISTNAME_2 LASTNAME_2" "FISTNAME_N LASTNAME_N")
 
 # list of sentence lengths on which to train separate models
 SENTENCE_LENGTHS_ARRAY=(10 50 100)
