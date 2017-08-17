@@ -12,6 +12,10 @@ config/training/*
 !config/training/
 !config/training/training.config.example
 !config/training/README.md
+config/stats/*
+!config/stats/
+!config/stats/stats.config.example
+!config/stats/README.md
 config/deployment/*
 !config/deployment/
 !config/deployment/deployment.config.example
@@ -27,6 +31,8 @@ data/facebook_structured/*
 data/facebook_parsed/*
 !data/facebook_parsed/
 !data/facebook_parsed/README.md
+stats/*
+!stats/README.md
 trained_models_backup/*
 !trained_models_backup/README.md
 .dir_bash_history

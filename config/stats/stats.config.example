@@ -1,0 +1,23 @@
+# CONFIGURABLE PARAMETERS FOR BASH TRAINING EXECUTION
+
+
+# -- Section 1: Parametrized String Variables --
+
+# Simple string variables for the stats.sh execution
+
+# executable dependency path variables
+PYTHON2_PATH=/home/<USERNAME>/Programs/anaconda2/envs/<FB_FRIENDBOT_FACTORY_PYTHON2_ENV>/bin/python
+
+# parameters related to the 'fbchat-archive-parser' dependency - namely: output path & output archive format type
+FACEBOOK_STRUCTURED_DATA_PATH=/home/<USERNAME>/Projects/cheeky-chatbot/data/facebook_structured/fb_messages_all.csv
+
+# output destination for facebook stats
+FACEBOOK_DATA_STATS_OUTPUT_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/stats
+
+
+# -- Section 2: Array Declaration Variables --
+
+# Array variables to orchestrate batch of stats aggregation
+
+# list of target users for which to generate stats
+TARGET_USER_RAW_STRINGS_ARRAY=("FISTNAME_1 LASTNAME_1" "FISTNAME_2 LASTNAME_2" "FISTNAME_N LASTNAME_N")
