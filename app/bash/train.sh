@@ -1,106 +1,73 @@
 #!/usr/bin/env bash
 
-# To skip prompt, enter valid path to training config file here
+# To skip environment setup prompts, can hardcode valid paths here
 CONFIG_PATH=""
+LIB_PATH=""
 
-validate_bash_version_above_3() {
-    # check if $BASH_VERSION is set at all
-    [ -z $BASH_VERSION ] && return 1
+# default environment for env_setup.sh
+WORKING_DIRECTORY="$(pwd)"
+DEFAULT_CONFIG_PATH="${WORKING_DIRECTORY}/config/training/training.config"
+DEFAULT_CONFIG_PROMPT="Please enter path to training config file: [default = ${DEFAULT_CONFIG_PATH}]:"
 
-    # If it's set, check the version
-    case $BASH_VERSION in 
-        3.*) return 0 ;;
-        4.*) return 0 ;;
-        ?) return 1;; 
-    esac
-}
+# attempt to execute standard environment setup
+SCRIPT_EXECUTION_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $SCRIPT_EXECUTION_DIRECTORY/env_setup.sh;
 
-if ! validate_bash_version_above_3; then
-    echo "Scripts requires bash version >= 3"
-    exit 1
+# validate successful environment setup
+if [[ ! $? = 0 ]]; then
+    printf "\n";
+    echo "Failed to setup environment. Exiting train.sh execution...";
+    printf "\n";
+    exit 1;
 fi
 
-usage() {
-    printf "\n"
-    echo "Usage $0 [-h] [-f]"
-    echo "where  [-h] displays usage information"
-    echo "where [-f] forces confirmation to all prompts (as possible)"
-    printf "\n";
-    exit 1
-}
+# train.sh help message
+scriptname=$(basename "$0");
+help_message="\
+Usage: ./$scriptname [-h] [-f]
 
-read_args() {
-    ARGS_SHIFT=1
+Parse uncompressed facebook archive and train conversational AI via messages data for batch of users.
+
+Options:
+
+  -h, --help               Show this help information.
+
+  -f, --force              Set FORCE_CONFIRM environment variable to force 
+                           confirm all prompts (as possible).
+";
+
+# train.sh args parser
+function training_args_parser() {
+    if [ -z $1 ]
+    then
+        return 0;
+    fi
     case $1 in 
-        "-h") usage;;
-        "-u") USERNAME=$2 && ARGS_SHIFT=2;;
-        "-p") PASSWORD=$2 && ARGS_SHIFT=2;;   
+        "-h"|"--help") standard_input_helpers.usage "$help_message";;  
         "-f") FORCE_CONFIRM="y";;
         *)
-        echo "Unexpected parameter $1."
-        usage;
+        echo "Unexpected parameter = '$1'."
+        standard_input_helpers.usage "$help_message";
     esac
-    return $ARGS_SHIFT
 }
 
-prompt_confirmation() {
-    CONFIRMATION="n"
-    if [ -z $2 ]
-    then
-        read -p "$1" CONFIRMATION
-    else
-        CONFIRMATION=$2
-    fi
-}
+# retrieve user input arguments via custom parser
+standard_input_helpers.read_all_args_via_custom_parser training_args_parser $*;
 
-config_read_file() {
-    (grep -E "^${2}=" -m 1 "${1}" 2>/dev/null || echo "VAR=__UNDEFINED__") | head -n 1 | cut -d '=' -f 2-;
-}
+# get environment variables from config file
+APPLICATION_PATH="$(standard_input_helpers.config_get APPLICATION_PATH)";
+PYTHON2_PATH="$(standard_input_helpers.config_get PYTHON2_PATH)";
+PYTHON3_PATH="$(standard_input_helpers.config_get PYTHON3_PATH)";
+FBCAP_PATH="$(standard_input_helpers.config_get FBCAP_PATH)";
+FACEBOOK_ARCHIVE_PATH="$(standard_input_helpers.config_get FACEBOOK_ARCHIVE_PATH)";
+FACEBOOK_STRUCTURED_OUTPUT_TYPE="$(standard_input_helpers.config_get FACEBOOK_STRUCTURED_OUTPUT_TYPE)";
+FACEBOOK_STRUCTURED_OUTFILE_PATH="$(standard_input_helpers.config_get FACEBOOK_STRUCTURED_OUTFILE_PATH)";
+PARSED_DATA_FORMAT="$(standard_input_helpers.config_get PARSED_DATA_FORMAT)";
+PARSED_DATA_PATH="$(standard_input_helpers.config_get PARSED_DATA_PATH)";
+TRAINED_MODELS_BACKUP_PATH="$(standard_input_helpers.config_get TRAINED_MODELS_BACKUP_PATH)";
 
-config_get() {
-    val="$(config_read_file "${CONFIG_PATH}" "${1}")";
-    if [ "${val}" = "__UNDEFINED__" ]; then
-        val="$(config_read_file config.cfg.defaults "${1}")";
-    fi
-    printf -- "%s" "${val}";
-}
-
-# read user input
-while [ $# != 0 ]
-do
-    read_args $*
-    NB_SHIFT=$?
-    I=1
-    while [[ $I -le $NB_SHIFT ]]
-    do
-        shift
-        ((I = I + 1))
-    done
-done
-
-if [[ -z $CONFIG_PATH ]]; then
-    working_directory="$(pwd)"
-    if [[ -z $FORCE_CONFIRM ]]; then
-        read -p "Please enter path to training config file: [default = ${working_directory}/config/training/training.config]:" CONFIG_PATH
-    fi
-    if [[ $CONFIG_PATH = "" ]]; then
-        CONFIG_PATH="${working_directory}/config/training/training.config"
-    fi
-fi
-
-APPLICATION_PATH="$(config_get APPLICATION_PATH)";
-PYTHON2_PATH="$(config_get PYTHON2_PATH)";
-PYTHON3_PATH="$(config_get PYTHON3_PATH)";
-FBCAP_PATH="$(config_get FBCAP_PATH)";
-FACEBOOK_ARCHIVE_PATH="$(config_get FACEBOOK_ARCHIVE_PATH)";
-FACEBOOK_STRUCTURED_OUTPUT_TYPE="$(config_get FACEBOOK_STRUCTURED_OUTPUT_TYPE)";
-FACEBOOK_STRUCTURED_OUTFILE_PATH="$(config_get FACEBOOK_STRUCTURED_OUTFILE_PATH)";
-PARSED_DATA_FORMAT="$(config_get PARSED_DATA_FORMAT)";
-PARSED_DATA_PATH="$(config_get PARSED_DATA_PATH)";
-TRAINED_MODELS_BACKUP_PATH="$(config_get TRAINED_MODELS_BACKUP_PATH)";
-
-declare -a target_user_raw_strings="$(config_get TARGET_USER_RAW_STRINGS_ARRAY)";
-declare -a sentence_lengths="$(config_get SENTENCE_LENGTHS_ARRAY)";
+declare -a target_user_raw_strings="$(standard_input_helpers.config_get TARGET_USER_RAW_STRINGS_ARRAY)";
+declare -a sentence_lengths="$(standard_input_helpers.config_get SENTENCE_LENGTHS_ARRAY)";
 
 # PARSE UNSTRUCTURED FACEBOOK ARCHIVE DATA TO INTENDED STRUCTURE FORMAT
 
@@ -133,7 +100,7 @@ do
         -i "$FACEBOOK_STRUCTURED_OUTFILE_PATH" -o "$PARSED_DATA_PATH" -l "$sentence_length";
 		if [[ ! $? = 0 ]]; then
             printf "\n"
-			prompt_confirmation "Failed to parse data for target user = '$target_user_raw_string'. Proceed anyway (y/n)? " $FORCE_CONFIRM
+			standard_input_helpers.prompt_confirmation "Failed to parse data for target user = '$target_user_raw_string'. Proceed anyway (y/n)? " $FORCE_CONFIRM
 			if [[ ! $CONFIRMATION =~ ^[Yy]$ ]]; then
 				printf "\nExiting execution...\n\n"
 				exit 1
@@ -147,14 +114,16 @@ printf "\n"
 
 echo "Successfully parsed trainable data for all desired users"
 
+# TRAIN CONVERSATIONAL AI's VIA PARSED CONVERSATION DATA
+
 train_user_bots() {
     if [[ ! -z $TRAINED_MODELS_BACKUP_PATH ]]; then
         mkdir -p $TRAINED_MODELS_BACKUP_PATH
     fi
-    MODEL_TRAINING_ROOT_DIR="$(config_get MODEL_TRAINING_ROOT_DIR)"
-    TRAINABLE_MODEL_TAG_STR="$(config_get TRAINABLE_MODEL_TAG)"
-    TRAINED_MODEL_ORIGINAL_DESTINATION="$(config_get TRAINED_MODEL_ORIGINAL_DESTINATION)"
-    MODEL_TRAINING_EXECUTION_COMMAND="$(config_get MODEL_TRAINING_EXECUTION_COMMAND)"
+    MODEL_TRAINING_ROOT_DIR="$(standard_input_helpers.config_get MODEL_TRAINING_ROOT_DIR)"
+    TRAINABLE_MODEL_TAG_STR="$(standard_input_helpers.config_get TRAINABLE_MODEL_TAG)"
+    TRAINED_MODEL_ORIGINAL_DESTINATION="$(standard_input_helpers.config_get TRAINED_MODEL_ORIGINAL_DESTINATION)"
+    MODEL_TRAINING_EXECUTION_COMMAND="$(standard_input_helpers.config_get MODEL_TRAINING_EXECUTION_COMMAND)"
     for target_user_raw_string in "${target_user_raw_strings[@]}"
     do
         for sentence_length in "${sentence_lengths[@]}"
@@ -171,7 +140,7 @@ train_user_bots() {
     done
 }
 
-prompt_confirmation "Proceed to train bots for all target users (y/n)? " $FORCE_CONFIRM
+standard_input_helpers.prompt_confirmation "Proceed to train bots for all target users (y/n)? " $FORCE_CONFIRM
 if [[ $CONFIRMATION =~ ^[Yy]$ ]]; then
     train_user_bots
 fi

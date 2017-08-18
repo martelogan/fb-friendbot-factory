@@ -1,100 +1,67 @@
 #!/usr/bin/env bash
 
-# To skip prompt, enter valid path to stats config file here
+# To skip environment setup prompts, can hardcode valid paths here
 CONFIG_PATH=""
+LIB_PATH=""
 
-validate_bash_version_above_3() {
-    # check if $BASH_VERSION is set at all
-    [ -z $BASH_VERSION ] && return 1
+# default environment for env_setup.sh
+WORKING_DIRECTORY="$(pwd)"
+DEFAULT_CONFIG_PATH="${WORKING_DIRECTORY}/config/stats/stats.config"
+DEFAULT_CONFIG_PROMPT="Please enter path to stats config file: [default = ${DEFAULT_CONFIG_PATH}]:"
 
-    # If it's set, check the version
-    case $BASH_VERSION in 
-        3.*) return 0 ;;
-        4.*) return 0 ;;
-        ?) return 1;; 
-    esac
-}
+# attempt to execute standard environment setup
+SCRIPT_EXECUTION_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $SCRIPT_EXECUTION_DIRECTORY/env_setup.sh;
 
-if ! validate_bash_version_above_3; then
-    echo "Scripts requires bash version >= 3"
-    exit 1
+# validate successful environment setup
+if [[ ! $? = 0 ]]; then
+    printf "\n";
+    echo "Failed to setup environment. Exiting stats.sh execution...";
+    printf "\n";
+    exit 1;
 fi
 
-usage() {
-    printf "\n"
-    echo "Usage $0 [-h] [-f]"
-    echo "where  [-h] displays usage information"
-    echo "where [-f] forces confirmation to all prompts (as possible)"
-    printf "\n";
-    exit 1
-}
+# stats.sh help message
+scriptname=$(basename "$0");
+help_message="\
+Usage: ./$scriptname [-h] [-f]
 
-read_args() {
-    ARGS_SHIFT=1
+Aggregate user message stats from structured facebook messages archive.
+
+Options:
+
+  -h, --help               Show this help information.
+
+  -f, --force              Set FORCE_CONFIRM environment variable to force 
+                           confirm all prompts (as possible).
+";
+
+# stats.sh args parser
+function stats_args_parser() {
+    if [ -z $1 ]
+    then
+        return 0;
+    fi
     case $1 in 
-        "-h") usage;;
-        "-u") USERNAME=$2 && ARGS_SHIFT=2;;
-        "-p") PASSWORD=$2 && ARGS_SHIFT=2;;   
+        "-h"|"--help") standard_input_helpers.usage "$help_message";;  
         "-f") FORCE_CONFIRM="y";;
         *)
-        echo "Unexpected parameter $1."
-        usage;
+        echo "Unexpected parameter = '$1'."
+        standard_input_helpers.usage "$help_message";
     esac
-    return $ARGS_SHIFT
 }
 
-prompt_confirmation() {
-    CONFIRMATION="n"
-    if [ -z $2 ]
-    then
-        read -p "$1" CONFIRMATION
-    else
-        CONFIRMATION=$2
-    fi
-}
+# retrieve user input arguments via custom parser
+standard_input_helpers.read_all_args_via_custom_parser stats_args_parser $*;
 
-config_read_file() {
-    (grep -E "^${2}=" -m 1 "${1}" 2>/dev/null || echo "VAR=__UNDEFINED__") | head -n 1 | cut -d '=' -f 2-;
-}
+# get environment variables from config file
+APPLICATION_PATH="$(standard_input_helpers.config_get APPLICATION_PATH)";
+PYTHON2_PATH="$(standard_input_helpers.config_get PYTHON2_PATH)";
+PYTHON3_PATH="$(standard_input_helpers.config_get PYTHON3_PATH)";
+FACEBOOK_STRUCTURED_DATA_PATH="$(standard_input_helpers.config_get FACEBOOK_STRUCTURED_DATA_PATH)";
+FACEBOOK_DATA_STATS_OUTPUT_PATH="$(standard_input_helpers.config_get FACEBOOK_DATA_STATS_OUTPUT_PATH)";
 
-config_get() {
-    val="$(config_read_file "${CONFIG_PATH}" "${1}")";
-    if [ "${val}" = "__UNDEFINED__" ]; then
-        val="$(config_read_file config.cfg.defaults "${1}")";
-    fi
-    printf -- "%s" "${val}";
-}
-
-# read user input
-while [ $# != 0 ]
-do
-    read_args $*
-    NB_SHIFT=$?
-    I=1
-    while [[ $I -le $NB_SHIFT ]]
-    do
-        shift
-        ((I = I + 1))
-    done
-done
-
-if [[ -z $CONFIG_PATH ]]; then
-    working_directory="$(pwd)"
-    if [[ -z $FORCE_CONFIRM ]]; then
-        read -p "Please enter path to stats config file: [default = ${working_directory}/config/stats/stats.config]:" CONFIG_PATH
-    fi
-    if [[ $CONFIG_PATH = "" ]]; then
-        CONFIG_PATH="${working_directory}/config/stats/stats.config"
-    fi
-fi
-
-APPLICATION_PATH="$(config_get APPLICATION_PATH)";
-PYTHON2_PATH="$(config_get PYTHON2_PATH)";
-PYTHON3_PATH="$(config_get PYTHON3_PATH)";
-FACEBOOK_STRUCTURED_DATA_PATH="$(config_get FACEBOOK_STRUCTURED_DATA_PATH)";
-FACEBOOK_DATA_STATS_OUTPUT_PATH="$(config_get FACEBOOK_DATA_STATS_OUTPUT_PATH)";
-
-declare -a target_user_raw_strings="$(config_get TARGET_USER_RAW_STRINGS_ARRAY)";
+declare -a target_user_raw_strings="$(standard_input_helpers.config_get TARGET_USER_RAW_STRINGS_ARRAY)";
 
 # AGGREGATE STATS FOR ALL TARGET USERS
 
@@ -111,7 +78,7 @@ do
     -i "$FACEBOOK_STRUCTURED_DATA_PATH" -o "$FACEBOOK_DATA_STATS_OUTPUT_PATH";
     if [[ ! $? = 0 ]]; then
         printf "\n"
-        prompt_confirmation "Failed to aggregate stats for target user = '$target_user_raw_string'. Proceed anyway (y/n)? " $FORCE_CONFIRM
+        standard_input_helpers.prompt_confirmation "Failed to aggregate stats for target user = '$target_user_raw_string'. Proceed anyway (y/n)? " $FORCE_CONFIRM
         if [[ ! $CONFIRMATION =~ ^[Yy]$ ]]; then
             printf "\nExiting execution...\n\n"
             exit 1
