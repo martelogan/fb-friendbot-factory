@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/martelogan/bash-standard-input-helpers.git
+	branch = master
+	commit = a0fac8b7612ab996827061cdb0b5b4aa56eee609
+	parent = a6318fd5662d469c2765673e371fef5cec02bc46
+	cmdver = 0.3.1
