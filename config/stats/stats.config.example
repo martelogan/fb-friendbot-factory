@@ -5,11 +5,14 @@
 
 # Simple string variables for the stats.sh execution
 
+# path to fb-friendbot-factory app directory
+APPLICATION_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/app
+
 # executable dependency path variables
 PYTHON2_PATH=/home/<USERNAME>/Programs/anaconda2/envs/<FB_FRIENDBOT_FACTORY_PYTHON2_ENV>/bin/python
 
 # parameters related to the 'fbchat-archive-parser' dependency - namely: output path & output archive format type
-FACEBOOK_STRUCTURED_DATA_PATH=/home/<USERNAME>/Projects/cheeky-chatbot/data/facebook_structured/fb_messages_all.csv
+FACEBOOK_STRUCTURED_DATA_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/data/facebook_structured/fb_messages_all.csv
 
 # output destination for facebook stats
 FACEBOOK_DATA_STATS_OUTPUT_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/stats
@@ -20,4 +23,4 @@ FACEBOOK_DATA_STATS_OUTPUT_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/s
 # Array variables to orchestrate batch of stats aggregation
 
 # list of target users for which to generate stats
-TARGET_USER_RAW_STRINGS_ARRAY=("FISTNAME_1 LASTNAME_1" "FISTNAME_2 LASTNAME_2" "FISTNAME_N LASTNAME_N")
+TARGET_USER_RAW_STRINGS_ARRAY=("FIRSTNAME_1 LASTNAME_1" "FIRSTNAME_2 LASTNAME_2" "FIRSTNAME_N LASTNAME_N")

@@ -88,6 +88,7 @@ if [[ -z $CONFIG_PATH ]]; then
     fi
 fi
 
+APPLICATION_PATH="$(config_get APPLICATION_PATH)";
 PYTHON2_PATH="$(config_get PYTHON2_PATH)";
 PYTHON3_PATH="$(config_get PYTHON3_PATH)";
 FBCAP_PATH="$(config_get FBCAP_PATH)";
@@ -128,14 +129,23 @@ for target_user_raw_string in "${target_user_raw_strings[@]}"
 do
     for sentence_length in "${sentence_lengths[@]}"
     do
-        "$PYTHON2_PATH" python/fb_messages_parser.py parse_to_"$PARSED_DATA_FORMAT" -u "$target_user_raw_string" \
+        "$PYTHON2_PATH" $APPLICATION_PATH/python/fb_messages_parser.py parse_to_"$PARSED_DATA_FORMAT" -u "$target_user_raw_string" \
         -i "$FACEBOOK_STRUCTURED_OUTFILE_PATH" -o "$PARSED_DATA_PATH" -l "$sentence_length";
+		if [[ ! $? = 0 ]]; then
+            printf "\n"
+			prompt_confirmation "Failed to parse data for target user = '$target_user_raw_string'. Proceed anyway (y/n)? " $FORCE_CONFIRM
+			if [[ ! $CONFIRMATION =~ ^[Yy]$ ]]; then
+				printf "\nExiting execution...\n\n"
+				exit 1
+			fi
+			CONFIRMATION="n"
+		fi
     done
 done
 
 printf "\n"
 
-echo "Successfully parsed trainable data for all target users"
+echo "Successfully parsed trainable data for all desired users"
 
 train_user_bots() {
     if [[ ! -z $TRAINED_MODELS_BACKUP_PATH ]]; then
@@ -161,12 +171,8 @@ train_user_bots() {
     done
 }
 
+prompt_confirmation "Proceed to train bots for all target users (y/n)? " $FORCE_CONFIRM
 if [[ $CONFIRMATION =~ ^[Yy]$ ]]; then
     train_user_bots
-else
-    prompt_confirmation "Proceed to train bots for all target users (y/n)? " $FORCE_CONFIRM
-    if [[ $CONFIRMATION =~ ^[Yy]$ ]]; then
-        train_user_bots
-    fi
-    CONFIRMATION="n"
 fi
+CONFIRMATION="n"

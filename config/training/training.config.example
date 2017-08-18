@@ -5,17 +5,20 @@
 
 # Simple string variables for the train.sh execution
 
+# path to fb-friendbot-factory app directory
+APPLICATION_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/app
+
 # executable dependency path variables
 PYTHON2_PATH=/home/<USERNAME>/Programs/anaconda2/envs/<FB_FRIENDBOT_FACTORY_PYTHON2_ENV>/bin/python
 PYTHON3_PATH=/home/<USERNAME>/Programs/anaconda2/envs/<FB_FRIENDBOT_FACTORY_PYTHON3_ENV>/bin/python
 FBCAP_PATH=/home/<USERNAME>/Programs/anaconda2/envs/<FB_FRIENDBOT_FACTORY_PYTHON2_ENV>/bin/fbcap
 
 # path to uncompressed facebook archive - retrieved via https://www.facebook.com/help/212802592074644?helpref=uf_permalink
-FACEBOOK_ARCHIVE_PATH=/home/<USERNAME>/Projects/cheeky-chatbot/data/facebook_unstructured/facebook-<USERNAME>
+FACEBOOK_ARCHIVE_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/data/facebook_unstructured/facebook-<USERNAME>
 
 # parameters related to the 'fbchat-archive-parser' dependency - namely: output path & output archive format type
 FACEBOOK_STRUCTURED_OUTPUT_TYPE=csv
-FACEBOOK_STRUCTURED_OUTFILE_PATH=/home/<USERNAME>/Projects/cheeky-chatbot/data/facebook_structured/fb_messages_all.csv
+FACEBOOK_STRUCTURED_OUTFILE_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/data/facebook_structured/fb_messages_all.csv
 
 # output destination & trainable data format to be prepared by the 'fb_messages_parser.py' python script
 PARSED_DATA_FORMAT=deep_qa
@@ -25,7 +28,7 @@ PARSED_DATA_PATH=/home/<USERNAME>/Projects/DeepQA/data/lightweight
 # notes:
 # - may not be easily supported by some training libraries
 # - set to empty sting if no backup is required
-TRAINED_MODELS_BACKUP_PATH=/home/<USERNAME>/Projects/cheeky-chatbot/trained_models
+TRAINED_MODELS_BACKUP_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/trained_models
 
 # directory path for model training library
 MODEL_TRAINING_ROOT_DIR=/home/<USERNAME>/Projects/DeepQA
@@ -49,7 +52,7 @@ MODEL_TRAINING_EXECUTION_COMMAND=$PYTHON3_PATH $MODEL_TRAINING_ROOT_DIR/main.py 
 # Array variables to orchestrate batch of training executions
 
 # list of target users for which to create chatbots
-# TARGET_USER_RAW_STRINGS_ARRAY=("FISTNAME_1 LASTNAME_1" "FISTNAME_2 LASTNAME_2" "FISTNAME_N LASTNAME_N")
+# TARGET_USER_RAW_STRINGS_ARRAY=("FIRSTNAME_1 LASTNAME_1" "FIRSTNAME_2 LASTNAME_2" "FIRSTNAME_N LASTNAME_N")
 
 # list of sentence lengths on which to train separate models
 SENTENCE_LENGTHS_ARRAY=(10 50 100)
