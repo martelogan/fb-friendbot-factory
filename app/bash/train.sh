@@ -143,7 +143,7 @@ if [ ! -z "$USE_MESSAGE_STATS" ] || [ -z "$DEFAULT_SENTENCE_LENGTHS_ARRAY" ] || 
         # attempt to use the facebook message stats to infer trainable sentence lengths for each target user
         # fb_message_stats.csv must be formatted with columns: ['Target_User_Name', 'Total_Messages_Sent', 'Average_Words_Per_Message',
         # 'Median_Words_Per_Message', 'Max_Words_Per_Message','Min_Words_Per_Message', 'Total_Conversations_Count',
-        # 'Trainable_Sentence_Length_Lower_Bound', 'Trainable_Sentence_Length_Upper_Bound']
+        # 'Trainable_Sentence_Length_Lower_Percentile_Value', 'Trainable_Sentence_Length_Upper_Percentile_Value']
         for target_user_raw_string in "${target_user_raw_strings[@]}"
         do
             # select row for the target user (should be unique)
@@ -151,9 +151,9 @@ if [ ! -z "$USE_MESSAGE_STATS" ] || [ -z "$DEFAULT_SENTENCE_LENGTHS_ARRAY" ] || 
             message_stats_csv_row_for_target_user="$(eval "${messages_stats_csv_row_select_statement}")"
             # extract average words per message from 3rd column of fb_message_stats.csv
             trainable_sentence_length_avg_words_per_message=$(echo "${message_stats_csv_row_for_target_user}" | cut -d ',' -f3)
-            # extract lower words per message bound from 8th column of fb_message_stats.csv
+            # extract lower words per message percentile value from 8th column of fb_message_stats.csv
             trainable_sentence_length_lower=$(echo "${message_stats_csv_row_for_target_user}" | cut -d ',' -f8)
-            # extract upper words per message bound from 9th column of fb_message_stats.csv
+            # extract upper words per message percentile value from 9th column of fb_message_stats.csv
             trainable_sentence_length_upper=$(echo "${message_stats_csv_row_for_target_user}" | cut -d ',' -f9)
             # format target user string for use as variable identifier
             formatted_target_user_str="$(echo "$target_user_raw_string" | tr '[:upper:]' '[:lower:]')"

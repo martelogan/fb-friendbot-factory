@@ -61,6 +61,17 @@ PYTHON3_PATH="$(standard_input_helpers.config_get PYTHON3_PATH)";
 FACEBOOK_STRUCTURED_DATA_PATH="$(standard_input_helpers.config_get FACEBOOK_STRUCTURED_DATA_PATH)";
 FACEBOOK_DATA_STATS_OUTPUT_PATH="$(standard_input_helpers.config_get FACEBOOK_DATA_STATS_OUTPUT_PATH)";
 
+# we will treat the percentile parameters as optional
+LOWER_SENTENCE_LENGTH_PERCENTILE="$(standard_input_helpers.config_get LOWER_SENTENCE_LENGTH_PERCENTILE)";
+UPPER_SENTENCE_LENGTH_PERCENTILE="$(standard_input_helpers.config_get UPPER_SENTENCE_LENGTH_PERCENTILE)";
+
+if [ -z "$LOWER_SENTENCE_LENGTH_PERCENTILE" ] || [ "$LOWER_SENTENCE_LENGTH_PERCENTILE" == "__UNDEFINED__" ]; then
+    LOWER_SENTENCE_LENGTH_PERCENTILE=25
+fi
+if [ -z "$UPPER_SENTENCE_LENGTH_PERCENTILE" ] || [ "$UPPER_SENTENCE_LENGTH_PERCENTILE" == "__UNDEFINED__" ]; then
+    UPPER_SENTENCE_LENGTH_PERCENTILE=99
+fi
+
 declare -a target_user_raw_strings="$(standard_input_helpers.config_get TARGET_USER_RAW_STRINGS_ARRAY)";
 
 # AGGREGATE STATS FOR ALL TARGET USERS
@@ -75,7 +86,7 @@ mkdir -p $FACEBOOK_DATA_STATS_OUTPUT_PATH
 for target_user_raw_string in "${target_user_raw_strings[@]}"
 do
     "$PYTHON2_PATH" $APPLICATION_PATH/python/fb_messages_aggregator.py aggregate_stats_for_target_usr -u "$target_user_raw_string" \
-    -i "$FACEBOOK_STRUCTURED_DATA_PATH" -o "$FACEBOOK_DATA_STATS_OUTPUT_PATH";
+    -i "$FACEBOOK_STRUCTURED_DATA_PATH" -o "$FACEBOOK_DATA_STATS_OUTPUT_PATH" -lo "$LOWER_SENTENCE_LENGTH_PERCENTILE" -up "$UPPER_SENTENCE_LENGTH_PERCENTILE";
     if [[ ! $? = 0 ]]; then
         printf "\n"
         standard_input_helpers.prompt_confirmation "Failed to aggregate stats for target user = '$target_user_raw_string'. Proceed anyway (y/n)? " $FORCE_CONFIRM

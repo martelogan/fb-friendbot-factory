@@ -17,6 +17,12 @@ FACEBOOK_STRUCTURED_DATA_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/dat
 # output destination for facebook stats
 FACEBOOK_DATA_STATS_OUTPUT_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/stats
 
+# lower explicit percentile for trainable sentence lengths
+LOWER_SENTENCE_LENGTH_PERCENTILE=25
+
+# uppper explicit percentile for trainable sentence lengths
+UPPER_SENTENCE_LENGTH_PERCENTILE=99
+
 
 # -- Section 2: Array Declaration Variables --
 

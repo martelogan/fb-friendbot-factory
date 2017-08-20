@@ -53,6 +53,8 @@ FB_STATS_CSV_STR="fb_message_stats.csv"
 target_user_name = ""
 structured_facebook_data_infile_path = ""
 facebook_data_stats_output_path = ""
+lower_sentence_length_percentile = 0.25
+upper_sentence_length_percentile = 0.99
 target_user_messages_count = 0
 target_user_messages_length_sum = 0
 target_user_max_message_length = 0
@@ -101,26 +103,26 @@ def write_target_user_stats_to_file(outfile_path):
             headers = ['Target_User_Name', 'Total_Messages_Sent', 'Average_Words_Per_Message',
                        'Median_Words_Per_Message', 'Max_Words_Per_Message',
                        'Min_Words_Per_Message', 'Total_Conversations_Count',
-                       'Trainable_Sentence_Length_Lower_Bound', 'Trainable_Sentence_Length_Upper_Bound']
+                       'Trainable_Sentence_Length_Lower_Percentile_Value', 'Trainable_Sentence_Length_Upper_Percentile_Value']
             writer.writerow(headers)
     with open(r'' + outfile_path, 'a') as f:
         writer = csv.writer(f)
         # construct our partial percentile functions
-        pct_99 = functools.partial(percentile, percent=0.99)
+        lower_percentile = functools.partial(percentile, percent=lower_sentence_length_percentile)
         median = functools.partial(percentile, percent=0.5)
-        pct_25 = functools.partial(percentile, percent=0.25)
+        upper_percentile = functools.partial(percentile, percent=upper_sentence_length_percentile)
         # sort our list of word counts
         sorted_word_counts = sorted(word_counts_list)
         # compute stats
         target_user_messages_average = int(target_user_messages_length_sum / target_user_messages_count)
         target_user_messages_median = int(median(sorted_word_counts))
-        trainable_lower_bound = int(pct_25(sorted_word_counts))
-        trainable_upper_bound = int(pct_99(sorted_word_counts))
+        trainable_lower_percentile_value = int(lower_percentile(sorted_word_counts))
+        trainable_upper_percentile_value = int(upper_percentile(sorted_word_counts))
         # write to csv
         fields = [target_user_name, target_user_messages_count, target_user_messages_average,
                   target_user_messages_median, target_user_max_message_length,
-                  target_user_min_message_length, target_user_conversations_count, trainable_lower_bound,
-                  trainable_upper_bound]
+                  target_user_min_message_length, target_user_conversations_count, trainable_lower_percentile_value,
+                  trainable_upper_percentile_value]
         writer.writerow(fields)
 
 
@@ -131,6 +133,8 @@ def set_aggregator_global_vars(argu):
     global target_user_name
     global structured_facebook_data_infile_path
     global facebook_data_stats_output_path
+    global lower_sentence_length_percentile
+    global upper_sentence_length_percentile
     if argu.target_user_name:
         target_user_name = argu.target_user_name
     else:
@@ -145,6 +149,10 @@ def set_aggregator_global_vars(argu):
         facebook_data_stats_output_path = argu.facebook_data_stats_output_path
     else:
         facebook_data_stats_output_path = raw_input("\n\tEnter the outfile path for the facebook data stats: \n\t")
+    if argu.lower_sentence_length_percentile:
+        lower_sentence_length_percentile = (argu.lower_sentence_length_percentile / 100.0)
+    if argu.upper_sentence_length_percentile:
+        upper_sentence_length_percentile = (argu.upper_sentence_length_percentile / 100.0)
 
 
 def aggregate_stats_for_target_usr(argu):

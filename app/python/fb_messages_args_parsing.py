@@ -41,6 +41,12 @@ def aggregate_stats_for_target_usr_args_parsing(subparsers):
     parser_t.add_argument('-o', '--output', required=False, type=str,
                           dest='facebook_data_stats_output_path', action='store',
                           default="", help=help_str)
+    parser_t.add_argument('-lo', '--low', required=False, type=int,
+                          dest='lower_sentence_length_percentile', action='store',
+                          default=0, help=help_str)
+    parser_t.add_argument('-up', '--upper', required=False, type=int,
+                          dest='upper_sentence_length_percentile', action='store',
+                          default=0, help=help_str)
     parser_t.set_defaults(func=aggregate_stats_for_target_usr)
 
 
