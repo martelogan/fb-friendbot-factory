@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # To skip environment setup prompts, can hardcode valid paths here
-CONFIG_PATH=""
-LIB_PATH=""
+# CONFIG_PATH="<valid_config_path>"
+# LIB_PATH="<valid_config_path>"
 
 # default environment for env_setup.sh
 WORKING_DIRECTORY="$(pwd)"

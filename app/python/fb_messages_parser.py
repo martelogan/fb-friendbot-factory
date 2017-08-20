@@ -86,7 +86,7 @@ def parse_to_deep_qa(argu):
     outfile_path = parsed_facebook_data_output_path + "/" + formatted_target_user_name_str + "-" + str(allowed_words_per_sentence) + '.txt'
     delete_leftover_content(outfile_path)
     execute_on_all_conversations(argu, outfile_path, attempt_append_to_cur_conversation, write_deepqa_conversation_to_file)
-    print "\n\tFinished parsing and exporting trainable corpus for target user '{}'".format(target_user_name.replace("\\", ""))
+    print "\n\tFinished parsing and exporting trainable corpus for target user '{}' constrained to sentence length '{}' ".format(target_user_name.replace("\\", ""), allowed_words_per_sentence)
 
 ##############################################################################
 #                               MAIN

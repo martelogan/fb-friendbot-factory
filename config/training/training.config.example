@@ -28,7 +28,10 @@ PARSED_DATA_PATH=/home/<USERNAME>/Projects/DeepQA/data/lightweight
 # notes:
 # - may not be easily supported by some training libraries
 # - set to empty sting if no backup is required
-TRAINED_MODELS_BACKUP_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/trained_models
+TRAINED_MODELS_BACKUP_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/trained_models_backup
+
+# desired output directory for aggregated message stats
+MESSAGE_STATS_DIR_PATH=/home/logan/Projects/fb-friendbot-factory/stats
 
 # directory path for model training library
 MODEL_TRAINING_ROOT_DIR=/home/<USERNAME>/Projects/DeepQA
@@ -55,4 +58,7 @@ MODEL_TRAINING_EXECUTION_COMMAND=$PYTHON3_PATH $MODEL_TRAINING_ROOT_DIR/main.py 
 # TARGET_USER_RAW_STRINGS_ARRAY=("FIRSTNAME_1 LASTNAME_1" "FIRSTNAME_2 LASTNAME_2" "FIRSTNAME_N LASTNAME_N")
 
 # list of sentence lengths on which to train separate models
-SENTENCE_LENGTHS_ARRAY=(10 50 100)
+DEFAULT_SENTENCE_LENGTHS_ARRAY=(10 50 100)
+
+# can also overide sentence lengths for specific users
+sentence_lengths_array_firstname1_lastname1=(1 10 20)

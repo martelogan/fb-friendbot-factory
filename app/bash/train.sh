@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # To skip environment setup prompts, can hardcode valid paths here
-CONFIG_PATH=""
-LIB_PATH=""
+# CONFIG_PATH="<valid_config_path>"
+# LIB_PATH="<valid_config_path>"
 
 # default environment for env_setup.sh
 WORKING_DIRECTORY="$(pwd)"
@@ -24,7 +24,7 @@ fi
 # train.sh help message
 scriptname=$(basename "$0");
 help_message="\
-Usage: ./$scriptname [-h] [-f]
+Usage: ./$scriptname [-h] [-f] [-s]
 
 Parse uncompressed facebook archive and train conversational AI via messages data for batch of users.
 
@@ -34,6 +34,8 @@ Options:
 
   -f, --force              Set FORCE_CONFIRM environment variable to force 
                            confirm all prompts (as possible).
+
+  -s, --stats              Infer trainable sentence_lengths_array from message stats
 ";
 
 # train.sh args parser
@@ -44,7 +46,8 @@ function training_args_parser() {
     fi
     case $1 in 
         "-h"|"--help") standard_input_helpers.usage "$help_message";;  
-        "-f") FORCE_CONFIRM="y";;
+        "-f"|"--force") FORCE_CONFIRM="y";;
+        "-s"|"--stats") USE_MESSAGE_STATS="y";;
         *)
         echo "Unexpected parameter = '$1'."
         standard_input_helpers.usage "$help_message";
@@ -65,9 +68,20 @@ FACEBOOK_STRUCTURED_OUTFILE_PATH="$(standard_input_helpers.config_get FACEBOOK_S
 PARSED_DATA_FORMAT="$(standard_input_helpers.config_get PARSED_DATA_FORMAT)";
 PARSED_DATA_PATH="$(standard_input_helpers.config_get PARSED_DATA_PATH)";
 TRAINED_MODELS_BACKUP_PATH="$(standard_input_helpers.config_get TRAINED_MODELS_BACKUP_PATH)";
+MESSAGE_STATS_DIR_PATH="$(standard_input_helpers.config_get MESSAGE_STATS_DIR_PATH)";
+MESSAGE_STATS_FILE_PATH="$MESSAGE_STATS_DIR_PATH/fb_message_stats.csv";
 
+# array variables construction
 declare -a target_user_raw_strings="$(standard_input_helpers.config_get TARGET_USER_RAW_STRINGS_ARRAY)";
-declare -a sentence_lengths="$(standard_input_helpers.config_get SENTENCE_LENGTHS_ARRAY)";
+declare -a DEFAULT_SENTENCE_LENGTHS_ARRAY="$(standard_input_helpers.config_get DEFAULT_SENTENCE_LENGTHS_ARRAY)";
+for target_user_raw_string in "${target_user_raw_strings[@]}"
+do
+    formatted_target_user_str="$(echo "$target_user_raw_string" | tr '[:upper:]' '[:lower:]')"
+    formatted_target_user_str="$(echo ${formatted_target_user_str// /_})"
+    indirect_ref_to_target_user_sentence_lengths=sentence_lengths_${formatted_target_user_str}
+    eval "declare -a ${indirect_ref_to_target_user_sentence_lengths}"
+    eval "${indirect_ref_to_target_user_sentence_lengths}=$(standard_input_helpers.config_get ${indirect_ref_to_target_user_sentence_lengths})"
+done
 
 # PARSE UNSTRUCTURED FACEBOOK ARCHIVE DATA TO INTENDED STRUCTURE FORMAT
 
@@ -84,17 +98,127 @@ if [ ! -f "$FACEBOOK_STRUCTURED_OUTFILE_PATH" ]; then
 fi
 
 if [ ! -s "$FACEBOOK_STRUCTURED_OUTFILE_PATH" ]; then
-    echo "Something went wrong with structured facebook data creation. No valid file found at path = 'FACEBOOK_STRUCTURED_OUTFILE_PATH'"
+    echo "Something went wrong with structured facebook data creation. No valid file found at path = '$FACEBOOK_STRUCTURED_OUTFILE_PATH'"
     exit 1
 fi
 
-# PARSE STRUCTURED FACEBOOK DATA FOR EACH USER TO REQUESTED TRAINABLE FORMAT
+if [ ! -z "$USE_MESSAGE_STATS" ] || [ -z "$DEFAULT_SENTENCE_LENGTHS_ARRAY" ] || [ "$DEFAULT_SENTENCE_LENGTHS_ARRAY" == "__UNDEFINED__" ]; then
+    # the user might want to infer sentence lengths from message stats
+    if [ -z "$USE_MESSAGE_STATS" ]; then
+        # prompt for confirmation since they are not explicitly directing us to use stats inferrence
+        standard_input_helpers.prompt_confirmation "No training sentence lengths provided. Would you like to infer these from message stats (y/n)? " $FORCE_CONFIRM
+        if [[ $CONFIRMATION =~ ^[Yy]$ ]]; then
+            # flag the user's confirmation to infer sentence lengths from message stats
+            USE_MESSAGE_STATS="y"
+        fi
+        CONFIRMATION="n"
+    fi
+    # after the user has been given the chance to confirm message stats inferrence, check the state of this variable
+    if [ ! -z "$USE_MESSAGE_STATS" ]; then
+        # in this case, we will infer trainable sentence lengths directly from facebook message stats
+        if [ ! -s "$MESSAGE_STATS_FILE_PATH" ]; then
+            # is there already a valid message stats csv
+            standard_input_helpers.prompt_confirmation "No valid fb_message_stats csv found. Would you like to generate one from message data (y/n)? " $FORCE_CONFIRM
+        else
+            # should we append to the existing message stats csv
+            standard_input_helpers.prompt_confirmation "Message stats csv found. Append to this (y/n)? " $FORCE_CONFIRM
+        fi
+        if [[ $CONFIRMATION =~ ^[Yy]$ ]]; then
+            # temporarily reset config environment to run stats aggregation
+            CACHED_CONFIG_PATH="$CONFIG_PATH"
+            CONFIG_PATH=""
+            # export existing lib path to subscript environment
+            export LIB_PATH="$LIB_PATH"
+            # execute the stats aggregation bash script
+            bash $SCRIPT_EXECUTION_DIRECTORY/stats.sh
+            # resume cached config environment
+            CONFIG_PATH="$CACHED_CONFIG_PATH"
+            # is the file ready for use
+            if [ ! -s "$MESSAGE_STATS_FILE_PATH" ]; then
+                echo "Something went wrong with facebook message stats aggregation. No valid file found at path = '$MESSAGE_STATS_FILE_PATH'"
+                exit 1
+            fi
+        fi
+        CONFIRMATION="n"
+        # attempt to use the facebook message stats to infer trainable sentence lengths for each target user
+        # fb_message_stats.csv must be formatted with columns: ['Target_User_Name', 'Total_Messages_Sent', 'Average_Words_Per_Message',
+        # 'Median_Words_Per_Message', 'Max_Words_Per_Message','Min_Words_Per_Message', 'Total_Conversations_Count',
+        # 'Trainable_Sentence_Length_Lower_Bound', 'Trainable_Sentence_Length_Upper_Bound']
+        for target_user_raw_string in "${target_user_raw_strings[@]}"
+        do
+            # select row for the target user (should be unique)
+            messages_stats_csv_row_select_statement="awk -F , '\$1 == \"$target_user_raw_string\" { print }' $MESSAGE_STATS_FILE_PATH"
+            message_stats_csv_row_for_target_user="$(eval "${messages_stats_csv_row_select_statement}")"
+            # extract average words per message from 3rd column of fb_message_stats.csv
+            trainable_sentence_length_avg_words_per_message=$(echo "${message_stats_csv_row_for_target_user}" | cut -d ',' -f3)
+            # extract lower words per message bound from 8th column of fb_message_stats.csv
+            trainable_sentence_length_lower=$(echo "${message_stats_csv_row_for_target_user}" | cut -d ',' -f8)
+            # extract upper words per message bound from 9th column of fb_message_stats.csv
+            trainable_sentence_length_upper=$(echo "${message_stats_csv_row_for_target_user}" | cut -d ',' -f9)
+            # format target user string for use as variable identifier
+            formatted_target_user_str="$(echo "$target_user_raw_string" | tr '[:upper:]' '[:lower:]')"
+            formatted_target_user_str="$(echo ${formatted_target_user_str// /_})"
+            # dynamically reference target user sentence lengths array variable
+            indirect_ref_to_target_user_sentence_lengths=sentence_lengths_${formatted_target_user_str}
+            eval "declare -a ${indirect_ref_to_target_user_sentence_lengths}"
+            # set contents of target user sentence lengths array variable according to inferred sentence lengths
+            eval "${indirect_ref_to_target_user_sentence_lengths}=( ${trainable_sentence_length_lower} ${trainable_sentence_length_avg_words_per_message} ${trainable_sentence_length_upper} )"
+        done
+    fi
+fi
 
+# PARSE STRUCTURED FACEBOOK DATA FOR EACH USER TO REQUESTED TRAINABLE FORMAT
+declare -a sentence_lengths_array=()
+
+# helper to handle environment variables for sentence lengths
+function handle_target_user_sentence_lengths() {
+    sentence_lengths_array=()
+    # format target user string for use as variable identifier
+    formatted_target_user_str="$(echo "$target_user_raw_string" | tr '[:upper:]' '[:lower:]')"
+    formatted_target_user_str="$(echo ${formatted_target_user_str// /_})"
+    # dynamically reference target user sentence lengths array variable
+    indirect_ref_to_target_user_sentence_lengths=sentence_lengths_${formatted_target_user_str}
+    # verify that target user sentence lengths have valid contents
+    eval 'target_user_sentence_lengths_contents=$'${indirect_ref_to_target_user_sentence_lengths}''
+    if [ ! -z "${target_user_sentence_lengths_contents}" ] && [ ! "${target_user_sentence_lengths_contents}" == "__UNDEFINED__" ]; then
+        # get number of trainable sentence lengths in target user array
+        eval 'num_target_user_sentence_lengths=${#'${indirect_ref_to_target_user_sentence_lengths}'[@]}'
+        # iteratively copy contents of target user sentence lengths to expected array
+        for (( index=0; index<$num_target_user_sentence_lengths; index++ )); do
+           get_sentence_length_cmd='echo ${'${indirect_ref_to_target_user_sentence_lengths}'['$index']}'
+           sentence_length=$(eval ${get_sentence_length_cmd})
+           sentence_lengths_array+=(${sentence_length})
+        done
+    else
+        # no valid target user sentence lengths - let's try to use the defaults instead
+        if [ -z "$DEFAULT_SENTENCE_LENGTHS_ARRAY" ] || [ "$DEFAULT_SENTENCE_LENGTHS_ARRAY" == "__UNDEFINED__" ]; then
+            # even the default sentence lengths are unavailable - let's notify this to decide how to proceed
+            printf "\n"
+            standard_input_helpers.prompt_confirmation "No valid sentence lengths found for target user = '$target_user_raw_string'. Skip user and proceed (y/n)? " $FORCE_CONFIRM
+            if [[ ! $CONFIRMATION =~ ^[Yy]$ ]]; then
+                # this was not okay...so let's just kill execution here
+                printf "\nExiting execution...\n\n"
+                exit 1
+            else
+                # this was acceptable...so we'll just skip this user
+                CONFIRMATION="n"
+                continue
+            fi
+        else
+            # we'll assign the default sentence lengths to out expected array
+            sentence_lengths_array=("${DEFAULT_SENTENCE_LENGTHS_ARRAY[@]}")
+        fi
+    fi
+}
+
+# ensure existing directory for parsed data
 mkdir -p $PARSED_DATA_PATH
 
+# parse the messages data to trainable conversations per <user, sentence length> combo
 for target_user_raw_string in "${target_user_raw_strings[@]}"
 do
-    for sentence_length in "${sentence_lengths[@]}"
+    handle_target_user_sentence_lengths;
+    for sentence_length in "${sentence_lengths_array[@]}"
     do
         "$PYTHON2_PATH" $APPLICATION_PATH/python/fb_messages_parser.py parse_to_"$PARSED_DATA_FORMAT" -u "$target_user_raw_string" \
         -i "$FACEBOOK_STRUCTURED_OUTFILE_PATH" -o "$PARSED_DATA_PATH" -l "$sentence_length";
@@ -126,7 +250,8 @@ train_user_bots() {
     MODEL_TRAINING_EXECUTION_COMMAND="$(standard_input_helpers.config_get MODEL_TRAINING_EXECUTION_COMMAND)"
     for target_user_raw_string in "${target_user_raw_strings[@]}"
     do
-        for sentence_length in "${sentence_lengths[@]}"
+        handle_target_user_sentence_lengths
+        for sentence_length in "${sentence_lengths_array[@]}"
         do
             formatted_target_user_str="$(echo "$target_user_raw_string" | tr '[:upper:]' '[:lower:]')"
             formatted_target_user_str="$(echo ${formatted_target_user_str// /_})"

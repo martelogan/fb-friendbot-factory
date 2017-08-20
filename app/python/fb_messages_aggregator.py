@@ -46,6 +46,10 @@ def percentile(N, percent, key=lambda x: x):
 
 # GLOBAL VARIABLES
 
+# constants
+FB_STATS_CSV_STR="fb_message_stats.csv"
+
+# parameters
 target_user_name = ""
 structured_facebook_data_infile_path = ""
 facebook_data_stats_output_path = ""
@@ -145,7 +149,7 @@ def set_aggregator_global_vars(argu):
 
 def aggregate_stats_for_target_usr(argu):
     set_aggregator_global_vars(argu)
-    outfile_path = facebook_data_stats_output_path + "/" + 'fb_stats.csv'
+    outfile_path = facebook_data_stats_output_path + "/" + FB_STATS_CSV_STR
     execute_on_all_conversations(argu, outfile_path, update_target_user_message_stats, update_conversations_count)
     write_target_user_stats_to_file(outfile_path)
     print "\n\tFinished aggregating stats for target user '{}'".format(target_user_name.replace("\\", ""))
