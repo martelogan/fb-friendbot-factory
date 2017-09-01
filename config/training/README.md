@@ -2,7 +2,7 @@
 
 ## Training config
 
-Here, our **[train.sh](../../train.sh)** script will expect a configuration file "_training.config_".
+Here, our **[train.sh](https://github.com/martelogan/fb-friendbot-factory/blob/master/app/bash/train.sh)** script will expect a configuration file "**_training.config_**".
 
 Effectively, this file is simply a key-value specification of the application parameters.
 

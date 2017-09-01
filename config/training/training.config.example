@@ -28,10 +28,10 @@ PARSED_DATA_PATH=/home/<USERNAME>/Projects/DeepQA/data/lightweight
 # notes:
 # - may not be easily supported by some training libraries
 # - set to empty sting if no backup is required
-TRAINED_MODELS_BACKUP_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/trained_models_backup
+TRAINED_MODELS_BACKUP_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/output_dest/trained_models_backup
 
 # desired output directory for aggregated message stats
-MESSAGE_STATS_DIR_PATH=/home/logan/Projects/fb-friendbot-factory/stats
+MESSAGE_STATS_DIR_PATH=/home/logan/Projects/fb-friendbot-factory/output_dest/stats
 
 # directory path for model training library
 MODEL_TRAINING_ROOT_DIR=/home/<USERNAME>/Projects/DeepQA

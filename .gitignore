@@ -31,9 +31,11 @@ data/facebook_structured/*
 data/facebook_parsed/*
 !data/facebook_parsed/
 !data/facebook_parsed/README.md
-stats/*
-!stats/README.md
-trained_models_backup/*
-!trained_models_backup/README.md
+output_dest/*
+!output_dest/README.md
+output_dest/stats/*
+!output_dest/stats/README.md
+output_dest/trained_models_backup/*
+!output_dest/trained_models_backup/README.md
 .dir_bash_history
 ./idea/*

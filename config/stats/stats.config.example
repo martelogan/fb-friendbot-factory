@@ -15,7 +15,7 @@ PYTHON2_PATH=/home/<USERNAME>/Programs/anaconda2/envs/<FB_FRIENDBOT_FACTORY_PYTH
 FACEBOOK_STRUCTURED_DATA_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/data/facebook_structured/fb_messages_all.csv
 
 # output destination for facebook stats
-FACEBOOK_DATA_STATS_OUTPUT_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/stats
+FACEBOOK_DATA_STATS_OUTPUT_PATH=/home/<USERNAME>/Projects/fb-friendbot-factory/output_dest/stats
 
 # lower explicit percentile for trainable sentence lengths
 LOWER_SENTENCE_LENGTH_PERCENTILE=25

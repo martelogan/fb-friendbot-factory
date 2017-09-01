@@ -1,8 +1,8 @@
 # Facebook Friendbot Factory
 
-## Trained Models Backup
+## Output destination directory
 
-This subdirectory is intended to host and back-up complete chatbot models post-training & pre-deployment.
+Folders under this subdirectory are intended as destinations for application standard output.
 
 ## Citation
 

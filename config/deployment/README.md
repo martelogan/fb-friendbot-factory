@@ -2,7 +2,7 @@
 
 ## Deployment config
 
-Here, our **deploy.sh** script will expect a configuration file "_deployment.config_".
+Here, our **deploy.sh** script will expect a configuration file "**_deployment.config_**".
 
 Effectively, this file is simply a key-value specification of the application parameters.
 

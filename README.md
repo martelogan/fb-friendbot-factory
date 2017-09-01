@@ -12,7 +12,8 @@ to
 
 1. **ready** - config demonstrated via DeepQA-trainable execution
 2. **ready** - successful batch training demonstrated via DeepQA module
-3. **todo** - need to script deployment and prepare example wrapper
+3. **ready** - automated inferrence of trainable sentence lengths via messenger statistics
+4. **todo** - need to script deployment and prepare example wrapper
 
 ## Installation & Execution
 
@@ -44,7 +45,7 @@ is made available <br> (conventionally under _[data/facebook_unstructured](data/
 5. Specify desired setup at _[config/training/training.config](config/training)_ & _[config/deployment/deployment.config](config/deployment)_
 <br>
 
-6. Run `./train.sh` or `./deploy.sh` from project root per relevant task
+6. Run `app/bash/train.sh`, `app/bash/stats.sh`, or `app/bash/deploy.sh` from project root per relevant task
 
 
 ## Citation

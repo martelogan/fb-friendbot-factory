@@ -2,7 +2,7 @@
 
 ## Training config
 
-Here, our **[stats.sh](../../stats.sh)** script will expect a configuration file "_stats.config_".
+Here, our **[stats.sh](https://github.com/martelogan/fb-friendbot-factory/blob/master/app/bash/stats.sh)** script will expect a configuration file "**_stats.config_**".
 
 Effectively, this file is simply a key-value specification of the application parameters.
 

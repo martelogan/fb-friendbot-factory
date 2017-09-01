@@ -1,8 +1,8 @@
 # Facebook Friendbot Factory
 
-## Stats
+## Lib directory
 
-This subdirectory is intended to host stats files aggregated from fb-friendbot-factory experiments.
+This folder is intended to hold source for packaged dependencies of the application.
 
 ## Citation
 

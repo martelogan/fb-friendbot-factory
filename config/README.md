@@ -4,10 +4,11 @@
 
 This subdirectory is intended to specify environment config for the friendbot-factory.
 
-Presently, there are 2 environments to configure:
+Presently, there are 2 required (+ 1 optional) environments to configure:
 
 1. [training](training)
-2. [deployment](deployment)
+2. [stats](stats) - optional
+3. [deployment](deployment)
 
 Each environment is detailed further in its own subdirectory.
 
