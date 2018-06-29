@@ -5,6 +5,17 @@
 # Used to parse fb messages csv (from ownaginatious': https://github.com/ownaginatious/fbchat-archive-parser)
 # to the format found at https://github.com/Conchylicultor/DeepQA/tree/master/data/lightweight
 
+# LICENSE INFORMATION HEADER
+
+__author__ = "Logan Martel"
+__copyright__ = "Copyleft (c) 2018, Logan Martel"
+__credits__ = ["Logan Martel"]
+__license__ = "ApacheV2.0"
+__version__ = "0.1.0"
+__maintainer__ = "Logan Martel"
+__email__ = "logan.martel@outlook.com"
+__status__ = "Development"
+
 # NOTE: The Facebook messages archive must be parsed already and formatted into a CSV file with
 # the columns ['thread'], ['sender'], ['date'], and ['message'].
 

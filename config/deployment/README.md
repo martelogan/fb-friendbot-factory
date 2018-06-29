@@ -8,8 +8,11 @@ Effectively, this file is simply a key-value specification of the application pa
 
 The structure and parameters needed can be derived from "_deployment.config.example_". 
  
-## Citation
+License
+-------
 
-If you use or modify the fb-friendbot-factory project, please credit the author as
+This code is under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+If you use or modify _fb-friendbot-factory_, please credit the original author as
 
 * Logan Martel - https://github.com/martelogan

@@ -1,6 +1,16 @@
 from fb_messages_parser import parse_to_deep_qa
 from fb_messages_aggregator import aggregate_stats_for_target_usr
 
+# LICENSE INFORMATION HEADER
+
+__author__ = "Logan Martel"
+__copyright__ = "Copyleft (c) 2018, Logan Martel"
+__credits__ = ["Logan Martel"]
+__license__ = "ApacheV2.0"
+__version__ = "0.1.0"
+__maintainer__ = "Logan Martel"
+__email__ = "logan.martel@outlook.com"
+__status__ = "Development"
 
 def parse_to_deep_qa_args_parsing(subparsers):
     """ Parse fb message archive csv to deepQA format. """

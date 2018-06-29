@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Script to aggregate user message stats from structured facebook messages archive.
+# Copyright (C) 2018 Logan Martel - All Rights Reserved
+# Permission to copy and modify is granted under the Apache License 2.0
+# Last revised 06/29/2018
+# See README.md for further details.
+
 # To skip environment setup prompts, can hardcode valid paths here
 # CONFIG_PATH="<valid_config_path>"
 # LIB_PATH="<valid_config_path>"

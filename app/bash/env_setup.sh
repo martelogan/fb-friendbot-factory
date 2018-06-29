@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Script to prepare bash environment.
+# Copyright (C) 2018 Logan Martel - All Rights Reserved
+# Permission to copy and modify is granted under the Apache License 2.0
+# Last revised 06/29/2018
+# See README.md for further details.
+
 if [[ -z $LIB_PATH ]]; then
     if [[ -z $FORCE_CONFIRM ]]; then
         read -p "Please enter path to dependencies library (lib folder) : [default = ${WORKING_DIRECTORY}/lib]:" LIB_PATH

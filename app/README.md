@@ -12,8 +12,11 @@ Presently, there are 2 primary subdirectories:
 Each respectively holds source for the corresponding execution environment. In particular, the [bash](bash) directory is responsible primarily for coordinating batch execution of multiple runtime configurations, whereas the [python](python) directory
 primarily implements the application logic.
 
-## Citation
+License
+-------
 
-If you use or modify the fb-friendbot-factory project, please credit the author as
+This code is under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+If you use or modify _fb-friendbot-factory_, please credit the original author as
 
 * Logan Martel - https://github.com/martelogan

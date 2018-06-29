@@ -11,8 +11,11 @@ The current source content:
 3. [fb_messages_parser.py](fb_messages_parser.py) : implements parsing structured data to trainable conversations
 4. [fb_messages_aggregator.py](fb_messages_aggregator.py) : implements parsing stats aggregation from structured messenger data
 
-## Citation
+License
+-------
 
-If you use or modify the fb-friendbot-factory project, please credit the author as
+This code is under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+If you use or modify _fb-friendbot-factory_, please credit the original author as
 
 * Logan Martel - https://github.com/martelogan

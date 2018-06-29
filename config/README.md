@@ -12,8 +12,11 @@ Presently, there are 2 required (+ 1 optional) environments to configure:
 
 Each environment is detailed further in its own subdirectory.
 
-## Citation
+License
+-------
 
-If you use or modify the fb-friendbot-factory project, please credit the author as
+This code is under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+If you use or modify _fb-friendbot-factory_, please credit the original author as
 
 * Logan Martel - https://github.com/martelogan
